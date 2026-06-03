@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Life Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --panel: rgba(255, 255, 255, 0.82);
+      --panel-strong: #ffffff;
+      --ink: #191a1f;
+      --muted: #69707d;
+      --line: rgba(25, 26, 31, 0.1);
+      --green: #1f9d67;
+      --blue: #3277d7;
+      --red: #d95a4e;
+      --yellow: #d69d22;
+      --violet: #7b61d8;
+      --cyan: #1d93a2;
+      --shadow: 0 20px 55px rgba(34, 38, 47, 0.12);
+      --radius: 8px;
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --bg: #101215;
+      --panel: rgba(28, 31, 36, 0.78);
+      --panel-strong: #1c1f24;
+      --ink: #f3f4f6;
+      --muted: #a0a7b3;
+      --line: rgba(255, 255, 255, 0.11);
+      --shadow: 0 20px 55px rgba(0, 0, 0, 0.35);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(31, 157, 103, 0.12), transparent 26rem),
+        radial-gradient(circle at 88% 8%, rgba(50, 119, 215, 0.12), transparent 24rem),
+        linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 82%, #ffffff 18%));
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 18px;
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+      backdrop-filter: blur(18px);
+      z-index: 3;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      background: conic-gradient(from 160deg, var(--green), var(--blue), var(--yellow), var(--red), var(--green));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55);
+      color: white;
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 5px;
+      margin: 18px 0 24px;
+    }
+
+    .nav button, .icon-button, .pill-button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      border-radius: var(--radius);
+      transition: 160ms ease;
+    }
+
+    .nav button {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    .nav button:hover, .nav button.active {
+      color: var(--ink);
+      background: color-mix(in srgb, var(--panel-strong) 92%, var(--green) 8%);
+      border-color: var(--line);
+    }
+
+    .nav svg, .toolbar svg, .widget-actions svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .sidebar-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .sidebar-card strong { display: block; font-size: 13px; }
+    .sidebar-card p { margin: 8px 0 12px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .progress {
+      overflow: hidden;
+      height: 8px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--muted) 16%, transparent);
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .headline h2 {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 42px);
+      line-height: 1.04;
+    }
+
+    .headline p {
+      max-width: 760px;
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-button, .pill-button {
+      display: inline-grid;
+      place-items: center;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 12px;
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--ink);
+    }
+
+    .pill-button {
+      grid-auto-flow: column;
+      gap: 8px;
+      min-width: auto;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .icon-button:hover, .pill-button:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    .section {
+      display: none;
+      animation: rise 240ms ease both;
+    }
+
+    .section.active { display: block; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+
+    .panel, .metric-card, .widget, .goal-card, .habit {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
+      backdrop-filter: blur(16px);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .score-panel {
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 18px;
+      min-height: 310px;
+    }
+
+    .ring {
+      position: relative;
+      display: grid;
+      place-items: center;
+      align-self: center;
+      width: min(100%, 205px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 78%, rgba(105,112,125,0.15) 78% 100%);
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: inherit;
+      background: var(--panel-strong);
+    }
+
+    .ring-value {
+      position: relative;
+      text-align: center;
+    }
+
+    .ring-value strong {
+      display: block;
+      font-size: 46px;
+      line-height: 1;
+    }
+
+    .ring-value span { color: var(--muted); font-size: 12px; }
+
+    .score-copy h3, .panel-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .score-copy p {
+      margin: 8px 0 14px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .balance-bars {
+      display: grid;
+      gap: 12px;
+    }
+
+    .balance-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) 42px;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ai-card {
+      display: grid;
+      gap: 14px;
+      min-height: 310px;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--green) 13%, var(--panel)), color-mix(in srgb, var(--blue) 12%, var(--panel)));
+    }
+
+    .ai-orb {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius);
+      background: var(--panel-strong);
+      color: var(--green);
+      box-shadow: var(--shadow);
+    }
+
+    .ai-card h3 { margin: 0; font-size: 20px; }
+    .ai-card p { margin: 0; color: var(--muted); line-height: 1.5; }
+
+    .recommendation {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel-strong) 74%, transparent);
+    }
+
+    .recommendation span {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .metric-card {
+      padding: 15px;
+      min-height: 130px;
+    }
+
+    .metric-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric-card strong {
+      display: block;
+      margin: 14px 0 6px;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .delta { font-size: 12px; font-weight: 700; }
+    .delta.good { color: var(--green); }
+    .delta.warn { color: var(--yellow); }
+    .delta.bad { color: var(--red); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .span-8 { grid-column: span 8; }
+    .span-7 { grid-column: span 7; }
+    .span-6 { grid-column: span 6; }
+    .span-5 { grid-column: span 5; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .panel-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel-strong) 65%, transparent);
+    }
+
+    .tabs button {
+      min-height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tabs button.active {
+      background: var(--panel-strong);
+      color: var(--ink);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+    }
+
+    .chart {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(20px, 1fr));
+      align-items: end;
+      gap: 10px;
+      min-height: 215px;
+      padding-top: 18px;
+    }
+
+    .bar {
+      position: relative;
+      min-height: 34px;
+      border-radius: 7px 7px 3px 3px;
+      background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--green) 65%, var(--blue)));
+    }
+
+    .bar::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 50%;
+      bottom: -24px;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .line-chart {
+      width: 100%;
+      min-height: 220px;
+    }
+
+    .line-chart svg { width: 100%; height: 220px; overflow: visible; }
+    .gridline { stroke: color-mix(in srgb, var(--muted) 18%, transparent); }
+    .path-a { stroke: var(--green); }
+    .path-b { stroke: var(--blue); }
+    .path-c { stroke: var(--yellow); }
+
+    .widget-list, .task-list, .goal-list, .habit-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .widget {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      box-shadow: none;
+    }
+
+    .widget-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--green) 13%, var(--panel-strong));
+      color: var(--green);
+    }
+
+    .widget strong, .goal-card strong, .habit strong { display: block; font-size: 14px; }
+    .widget span, .goal-card span, .habit span { color: var(--muted); font-size: 12px; }
+
+    .widget-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .widget-actions button {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-strong);
+      color: var(--muted);
+    }
+
+    .habit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+    }
+
+    .check {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--panel-strong);
+      color: transparent;
+    }
+
+    .habit.done .check {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .day {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-strong);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .day.hot { background: color-mix(in srgb, var(--green) 22%, var(--panel-strong)); color: var(--ink); }
+    .day.gold { background: color-mix(in srgb, var(--yellow) 30%, var(--panel-strong)); color: var(--ink); }
+
+    .goal-card {
+      padding: 14px;
+    }
+
+    .goal-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .journal {
+      min-height: 160px;
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      resize: vertical;
+      background: var(--panel-strong);
+      color: var(--ink);
+    }
+
+    .mood-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mood-row button {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-strong);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .mood-row button.active {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 1px var(--green);
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 14px;
+      padding-left: 20px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--line);
+    }
+
+    .event {
+      position: relative;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-strong);
+    }
+
+    .event::before {
+      content: "";
+      position: absolute;
+      left: -20px;
+      top: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .badge {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-strong);
+    }
+
+    .badge b { display: block; font-size: 22px; margin-bottom: 8px; }
+    .badge span { color: var(--muted); font-size: 12px; }
+
+    .mobile-nav-toggle { display: none; }
+
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 86px minmax(0, 1fr); }
+      .sidebar { padding: 16px 12px; }
+      .brand div:not(.mark), .nav span, .nav small, .sidebar-card { display: none; }
+      .nav button { grid-template-columns: 1fr; place-items: center; }
+      .hero-grid, .score-panel { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .span-8, .span-7, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
+    }
+
+    @media (max-width: 720px) {
+      .app { display: block; }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(82vw, 320px);
+        transform: translateX(-105%);
+        transition: transform 180ms ease;
+      }
+      body.nav-open .sidebar { transform: translateX(0); }
+      .brand div:not(.mark), .nav span, .nav small, .sidebar-card { display: block; }
+      .nav button { grid-template-columns: 24px 1fr auto; place-items: stretch; }
+      .mobile-nav-toggle { display: inline-grid; }
+      .main { padding: 16px; }
+      .topbar { align-items: start; }
+      .toolbar { flex-shrink: 0; }
+      .pill-button span { display: none; }
+      .metrics { grid-template-columns: 1fr; }
+      .chart { gap: 7px; min-height: 180px; }
+      .badge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mood-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="mark">LD</div>
+        <div>
+          <h1>Life Dashboard</h1>
+          <span>Personal operating system</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-card">
+        <strong>Weekly AI summary</strong>
+        <p>Your balance is strongest in learning and finance. Recovery routines and a tighter evening cutoff are the biggest unlocks.</p>
+        <div class="progress" aria-label="Weekly life score"><span style="width:78%"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <button class="icon-button mobile-nav-toggle" id="menuToggle" aria-label="Open navigation">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+        <div class="headline">
+          <h2 id="pageTitle">Unified Overview</h2>
+          <p id="pageSubtitle">A premium command center for health, money, learning, habits, goals, mood, journals, and AI-driven recommendations.</p>
+        </div>
+        <div class="toolbar">
+          <button class="icon-button" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+            <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 7.2A9 9 0 1 1 12 3z"></path></svg>
+          </button>
+          <button class="pill-button" id="exportCsv" title="Export CSV">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"></path></svg><span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <section class="section active" id="overview" data-title="Unified Overview" data-subtitle="A premium command center for health, money, learning, habits, goals, mood, journals, and AI-driven recommendations.">
+        <div class="hero-grid">
+          <div class="panel score-panel">
+            <div class="ring"><div class="ring-value"><strong>78</strong><span>Life balance score</span></div></div>
+            <div class="score-copy">
+              <h3>Today is trending upward</h3>
+              <p>Your daily score improved by 6 points from yesterday. Health consistency, spending discipline, and a 42-minute learning block are carrying the day.</p>
+              <div class="balance-bars">
+                <div class="balance-row"><span>Health</span><div class="progress"><span style="width:72%; background:var(--green)"></span></div><b>72</b></div>
+                <div class="balance-row"><span>Finance</span><div class="progress"><span style="width:84%; background:var(--blue)"></span></div><b>84</b></div>
+                <div class="balance-row"><span>Learning</span><div class="progress"><span style="width:91%; background:var(--yellow)"></span></div><b>91</b></div>
+                <div class="balance-row"><span>Habits</span><div class="progress"><span style="width:66%; background:var(--red)"></span></div><b>66</b></div>
+                <div class="balance-row"><span>Goals</span><div class="progress"><span style="width:77%; background:var(--violet)"></span></div><b>77</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel ai-card">
+            <div class="ai-orb">
+              <svg viewBox="0 0 24 24" width="25" height="25" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M12 3l1.9 5.2L19 10l-5.1 1.8L12 17l-1.9-5.2L5 10l5.1-1.8L12 3z"></path><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"></path></svg>
+            </div>
+            <div>
+              <h3>AI Personal Coach</h3>
+              <p id="coachText">Prioritize a 20-minute zone-2 walk after work, cap discretionary spend at $34 today, and convert your cloud course into three micro-lessons.</p>
+            </div>
+            <div class="recommendation">
+              <span>Smart goal breakdown</span>
+              <strong>Finish the analytics certification</strong>
+              <p>Next tasks: watch module 4, write 8 practice SQL queries, schedule a 25-minute review block, then log one insight in notes.</p>
+            </div>
+            <button class="pill-button" id="refreshCoach">
+              <svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>
+              Generate recommendation
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric-card"><div class="metric-head"><span>Productivity</span><span class="delta good">+11%</span></div><strong>86</strong><span class="delta good">Deep work streak active</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Water</span><span class="delta warn">5/8 cups</span></div><strong>62%</strong><span>3 cups remaining</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Net savings</span><span class="delta good">+$420</span></div><strong>24%</strong><span>Monthly goal progress</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Learning streak</span><span class="delta good">18 days</span></div><strong>42m</strong><span>Study time today</span></div>
+        </div>
+
+        <div class="grid">
+          <div class="panel span-8">
+            <div class="panel-title">
+              <div><h3>Personal Growth Analytics</h3><p>Composite score across the last seven days</p></div>
+              <div class="tabs"><button class="active">Week</button><button>Month</button></div>
+            </div>
+            <div class="chart" aria-label="Seven day growth chart">
+              <div class="bar" style="height:58%" data-label="Thu"></div>
+              <div class="bar" style="height:70%" data-label="Fri"></div>
+              <div class="bar" style="height:46%" data-label="Sat"></div>
+              <div class="bar" style="height:62%" data-label="Sun"></div>
+              <div class="bar" style="height:78%" data-label="Mon"></div>
+              <div class="bar" style="height:84%" data-label="Tue"></div>
+              <div class="bar" style="height:91%" data-label="Wed"></div>
+            </div>
+          </div>
+          <div class="panel span-4">
+            <div class="panel-title"><div><h3>Custom widgets</h3><p>Drag-ready operational modules</p></div></div>
+            <div class="widget-list" id="widgets"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="health" data-title="Health Dashboard" data-subtitle="Track water, sleep, weight, BMI, workouts, calories, reports, and progress analytics.">
+        <div class="metrics">
+          <div class="metric-card"><div class="metric-head"><span>Sleep</span><span class="delta good">+45m</span></div><strong>7.4h</strong><span>Quality score 82</span></div>
+          <div class="metric-card"><div class="metric-head"><span>BMI</span><span class="delta good">Normal</span></div><strong>22.6</strong><span>Weight 68.4 kg</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Calories</span><span class="delta warn">410 left</span></div><strong>1,690</strong><span>Daily target 2,100</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Workout</span><span class="delta good">Logged</span></div><strong>46m</strong><span>Strength + cardio</span></div>
+        </div>
+        <div class="grid">
+          <div class="panel span-7"><div class="panel-title"><div><h3>Health progress</h3><p>Sleep, calories, and workouts this week</p></div></div><div class="line-chart" id="healthChart"></div></div>
+          <div class="panel span-5"><div class="panel-title"><div><h3>Weekly report</h3><p>Health improvement suggestions</p></div></div><div class="task-list"><div class="recommendation"><strong>Recovery</strong><p>Move your last caffeine earlier by 90 minutes to protect sleep depth.</p></div><div class="recommendation"><strong>Workout plan</strong><p>Add one mobility session after leg day to reduce soreness and keep the streak alive.</p></div><div class="recommendation"><strong>Nutrition</strong><p>Protein is 18g under target. Add a Greek yogurt or lentil bowl before dinner.</p></div></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="finance" data-title="Finance Dashboard" data-subtitle="Manage budgets, categories, income, expenses, investments, savings goals, and monthly reports.">
+        <div class="metrics">
+          <div class="metric-card"><div class="metric-head"><span>Income</span><span class="delta good">On track</span></div><strong>$6.8k</strong><span>This month</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Expenses</span><span class="delta bad">+7%</span></div><strong>$3.2k</strong><span>Dining above plan</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Savings</span><span class="delta good">24%</span></div><strong>$1.6k</strong><span>Goal $6.5k</span></div>
+          <div class="metric-card"><div class="metric-head"><span>Investments</span><span class="delta good">+3.4%</span></div><strong>$42k</strong><span>Portfolio value</span></div>
+        </div>
+        <div class="grid">
+          <div class="panel span-8"><div class="panel-title"><div><h3>Spending patterns</h3><p>Expense categorization by week</p></div></div><div class="chart"><div class="bar" style="height:72%; background:var(--red)" data-label="Home"></div><div class="bar" style="height:48%; background:var(--yellow)" data-label="Food"></div><div class="bar" style="height:36%; background:var(--blue)" data-label="Travel"></div><div class="bar" style="height:28%; background:var(--green)" data-label="Health"></div><div class="bar" style="height:31%; background:var(--violet)" data-label="Learn"></div><div class="bar" style="height:18%; background:var(--cyan)" data-label="Fun"></div><div class="bar" style="height:22%; background:var(--muted)" data-label="Other"></div></div></div>
+          <div class="panel span-4"><div class="panel-title"><div><h3>AI savings insights</h3><p>Recommendations generated from recent spend</p></div></div><div class="task-list"><div class="recommendation"><strong>Subscription audit</strong><p>Cancel or pause two overlapping software plans to free $38 per month.</p></div><div class="recommendation"><strong>Budget guardrail</strong><p>Set dining alerts at 75% and 90% of budget; you usually overshoot after Fridays.</p></div><div class="recommendation"><strong>Investment nudge</strong><p>Automate $120 into your index fund after salary deposit.</p></div></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="learning" data-title="Learning Dashboard" data-subtitle="Run courses, goals, notes, reading, skill progress, Pomodoro sessions, study plans, and streaks.">
+        <div class="grid">
+          <div class="panel span-4"><div class="panel-title"><div><h3>Pomodoro</h3><p>Focused study timer</p></div></div><div class="ring" style="width:180px;margin:auto;background:conic-gradient(var(--yellow) 0 64%, rgba(105,112,125,.15) 64% 100%)"><div class="ring-value"><strong id="timer">25:00</strong><span>Focus sprint</span></div></div><button class="pill-button" id="timerButton" style="margin-top:16px;width:100%;justify-content:center">Start timer</button></div>
+          <div class="panel span-8"><div class="panel-title"><div><h3>Courses and skills</h3><p>Progress toward current learning goals</p></div></div><div class="goal-list"><div class="goal-card"><div class="goal-meta"><strong>Data Analytics Certificate</strong><span class="tag">Education</span></div><div class="progress"><span style="width:74%; background:var(--blue)"></span></div></div><div class="goal-card"><div class="goal-meta"><strong>React Architecture Notes</strong><span class="tag">Skill</span></div><div class="progress"><span style="width:52%; background:var(--green)"></span></div></div><div class="goal-card"><div class="goal-meta"><strong>Reading: Atomic Habits</strong><span class="tag">Reading</span></div><div class="progress"><span style="width:61%; background:var(--yellow)"></span></div></div></div></div>
+          <div class="panel span-12"><div class="panel-title"><div><h3>AI-generated study plan</h3><p>Adaptive plan based on streak and course deadlines</p></div></div><div class="widget-list"><div class="widget"><div class="widget-icon">1</div><div><strong>Review weak concepts</strong><span>SQL joins, cohort analysis, and dashboard annotations</span></div><span class="tag">25m</span></div><div class="widget"><div class="widget-icon">2</div><div><strong>Create one practical artifact</strong><span>Build a retention chart from sample data and save notes</span></div><span class="tag">40m</span></div><div class="widget"><div class="widget-icon">3</div><div><strong>Reflection note</strong><span>Write three takeaways and one follow-up question</span></div><span class="tag">10m</span></div></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="habits" data-title="Habit Tracker" data-subtitle="Create custom habits, track completions, streaks, reminders, analytics, calendars, and progress.">
+        <div class="grid">
+          <div class="panel span-5"><div class="panel-title"><div><h3>Daily habits</h3><p>Tap to complete or reopen a habit</p></div></div><div class="habit-list" id="habitList"></div></div>
+          <div class="panel span-7"><div class="panel-title"><div><h3>Calendar view</h3><p>Completion heatmap for this month</p></div></div><div class="calendar" id="calendar"></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="goals" data-title="Goal Management" data-subtitle="Plan short-term and long-term goals with categories, milestones, deadlines, reminders, and analytics.">
+        <div class="grid">
+          <div class="panel span-8"><div class="panel-title"><div><h3>Active goals</h3><p>Milestones and deadline readiness</p></div></div><div class="goal-list"><div class="goal-card"><div class="goal-meta"><strong>Run a 10K under 58 minutes</strong><span class="tag">Health</span></div><span>Deadline: Aug 30</span><div class="progress" style="margin-top:10px"><span style="width:64%; background:var(--green)"></span></div></div><div class="goal-card"><div class="goal-meta"><strong>Build a six-month emergency fund</strong><span class="tag">Finance</span></div><span>Deadline: Dec 31</span><div class="progress" style="margin-top:10px"><span style="width:43%; background:var(--blue)"></span></div></div><div class="goal-card"><div class="goal-meta"><strong>Ship a portfolio case study</strong><span class="tag">Career</span></div><span>Deadline: Jul 15</span><div class="progress" style="margin-top:10px"><span style="width:81%; background:var(--violet)"></span></div></div></div></div>
+          <div class="panel span-4"><div class="panel-title"><div><h3>Completion analytics</h3><p>Goal velocity by category</p></div></div><div class="chart"><div class="bar" style="height:64%; background:var(--green)" data-label="Health"></div><div class="bar" style="height:43%; background:var(--blue)" data-label="Money"></div><div class="bar" style="height:81%; background:var(--violet)" data-label="Career"></div><div class="bar" style="height:56%; background:var(--yellow)" data-label="Learn"></div></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="journal" data-title="Journal, Mood, and Timeline" data-subtitle="Capture daily reflections, mood trends, milestones, achievement badges, notifications, and life timeline events.">
+        <div class="grid">
+          <div class="panel span-6"><div class="panel-title"><div><h3>Daily journal</h3><p>Autosaved locally in this prototype</p></div></div><textarea class="journal" id="journalText" placeholder="What changed today? What do you want tomorrow to feel like?"></textarea></div>
+          <div class="panel span-6"><div class="panel-title"><div><h3>Mood tracking</h3><p>Select today’s emotional baseline</p></div></div><div class="mood-row" id="moods"><button>Calm</button><button>Focused</button><button class="active">Optimistic</button><button>Tired</button><button>Stressed</button></div></div>
+          <div class="panel span-7"><div class="panel-title"><div><h3>Life timeline</h3><p>Milestones, reports, and reminders</p></div></div><div class="timeline"><div class="event"><strong>Monthly finance report generated</strong><br><span>Dining trend detected; budget reminder scheduled.</span></div><div class="event"><strong>Achievement unlocked: 18-day learning streak</strong><br><span>Next badge unlocks at 21 days.</span></div><div class="event"><strong>Health report ready</strong><br><span>Sleep consistency improved 12% over the previous week.</span></div></div></div>
+          <div class="panel span-5"><div class="panel-title"><div><h3>Achievements</h3><p>Motivation system and milestone badges</p></div></div><div class="badge-grid"><div class="badge"><b>18</b><span>Study streak</span></div><div class="badge"><b>5</b><span>Workout logs</span></div><div class="badge"><b>24%</b><span>Savings goal</span></div><div class="badge"><b>91</b><span>Learning score</span></div></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const icons = {
+      overview: '<svg viewBox="0 0 24 24"><path d="M4 13h7V4H4v9zM13 20h7V4h-7v16zM4 20h7v-5H4v5z"></path></svg>',
+      health: '<svg viewBox="0 0 24 24"><path d="M20.8 8.6a5.2 5.2 0 0 0-8.1-4.1L12 5l-.7-.5a5.2 5.2 0 0 0-8.1 4.1c0 5.5 8.8 10.4 8.8 10.4s8.8-4.9 8.8-10.4z"></path><path d="M7 12h3l1.5-3 2 6 1.5-3h2"></path></svg>',
+      finance: '<svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16V9m5 7V7m5 9v-5"></path></svg>',
+      learning: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"></path></svg>',
+      habits: '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>',
+      goals: '<svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"></path><path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path></svg>',
+      journal: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path><path d="M8 8h8M8 12h8M8 16h4"></path></svg>'
+    };
+
+    const navItems = [
+      ['overview', 'Overview', '78'],
+      ['health', 'Health', '72'],
+      ['finance', 'Finance', '84'],
+      ['learning', 'Learning', '91'],
+      ['habits', 'Habits', '66'],
+      ['goals', 'Goals', '77'],
+      ['journal', 'Journal', 'Mood']
+    ];
+
+    const nav = document.querySelector('#nav');
+    nav.innerHTML = navItems.map(([id, label, score], index) => `
+      <button class="${index === 0 ? 'active' : ''}" data-target="${id}">
+        ${icons[id]}<span>${label}</span><small>${score}</small>
+      </button>
+    `).join('');
+
+    const pageTitle = document.querySelector('#pageTitle');
+    const pageSubtitle = document.querySelector('#pageSubtitle');
+
+    nav.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-target]');
+      if (!button) return;
+      document.body.classList.remove('nav-open');
+      document.querySelectorAll('.nav button').forEach(item => item.classList.toggle('active', item === button));
+      document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+      const section = document.getElementById(button.dataset.target);
+      section.classList.add('active');
+      pageTitle.textContent = section.dataset.title;
+      pageSubtitle.textContent = section.dataset.subtitle;
+    });
+
+    document.querySelector('#menuToggle').addEventListener('click', () => document.body.classList.toggle('nav-open'));
+
+    const storedTheme = localStorage.getItem('life-dashboard-theme');
+    if (storedTheme) document.documentElement.dataset.theme = storedTheme;
+    document.querySelector('#themeToggle').addEventListener('click', () => {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = nextTheme;
+      localStorage.setItem('life-dashboard-theme', nextTheme);
+    });
+
+    const widgetData = [
+      ['Water intake', '5 of 8 cups logged', 'health'],
+      ['Budget alert', '$34 dining budget left', 'finance'],
+      ['Next focus block', 'Analytics course at 6:30 PM', 'learning'],
+      ['Reminder queue', '3 deadline nudges scheduled', 'goals']
+    ];
+
+    document.querySelector('#widgets').innerHTML = widgetData.map(([title, detail, icon]) => `
+      <div class="widget">
+        <div class="widget-icon">${icons[icon]}</div>
+        <div><strong>${title}</strong><span>${detail}</span></div>
+        <div class="widget-actions"><button aria-label="Move widget">${icons.overview}</button></div>
+      </div>
+    `).join('');
+
+    const habits = [
+      ['Hydrate by noon', '12-day streak', true],
+      ['Read 10 pages', '18-day streak', true],
+      ['Workout log', '5 sessions this week', true],
+      ['Evening shutdown', 'Needs attention', false],
+      ['No impulse spend', '3-day streak', false]
+    ];
+
+    const habitList = document.querySelector('#habitList');
+    habitList.innerHTML = habits.map(([name, meta, done]) => `
+      <button class="habit ${done ? 'done' : ''}" type="button">
+        <span><strong>${name}</strong><span>${meta}</span></span>
+        <span class="check">✓</span>
+      </button>
+    `).join('');
+    habitList.addEventListener('click', event => {
+      const habit = event.target.closest('.habit');
+      if (habit) habit.classList.toggle('done');
+    });
+
+    const calendar = document.querySelector('#calendar');
+    calendar.innerHTML = Array.from({ length: 35 }, (_, index) => {
+      const day = index + 1;
+      const level = [1,2,4,5,7,9,10,11,13,14,16,18,19,21,22,23,25,27,28,30,31].includes(day) ? 'hot' : '';
+      const gold = [6,15,24].includes(day) ? 'gold' : '';
+      return `<div class="day ${gold || level}">${day <= 31 ? day : ''}</div>`;
+    }).join('');
+
+    const moods = document.querySelector('#moods');
+    moods.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      moods.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button));
+    });
+
+    const journal = document.querySelector('#journalText');
+    journal.value = localStorage.getItem('life-dashboard-journal') || '';
+    journal.addEventListener('input', () => localStorage.setItem('life-dashboard-journal', journal.value));
+
+    const coaching = [
+      'Block 35 minutes for your most important goal before messaging apps. Your current morning completion rate is 2.4x higher.',
+      'Plan a lower-spend dinner tonight. You are close to the dining threshold, but groceries are comfortably under budget.',
+      'Protect sleep by moving the workout earlier and setting a 10:30 PM screen cutoff. Recovery is the week’s leverage point.',
+      'Convert the big career goal into one visible artifact today: outline, draft, screenshot, and publish notes.'
+    ];
+    let coachIndex = 0;
+    document.querySelector('#refreshCoach').addEventListener('click', () => {
+      coachIndex = (coachIndex + 1) % coaching.length;
+      document.querySelector('#coachText').textContent = coaching[coachIndex];
+    });
+
+    document.querySelector('#exportCsv').addEventListener('click', () => {
+      const rows = [
+        ['Metric', 'Value', 'Area'],
+        ['Life balance score', '78', 'Overview'],
+        ['Sleep hours', '7.4', 'Health'],
+        ['Savings progress', '24%', 'Finance'],
+        ['Learning streak', '18 days', 'Learning'],
+        ['Goal completion', '77%', 'Goals']
+      ];
+      const blob = new Blob([rows.map(row => row.join(',')).join('\n')], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'life-dashboard-export.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    function renderLineChart() {
+      document.querySelector('#healthChart').innerHTML = `
+        <svg viewBox="0 0 640 220" role="img" aria-label="Health report chart">
+          <path class="gridline" d="M20 40H620M20 95H620M20 150H620M20 205H620"></path>
+          <path class="path-a" d="M25 150 C90 120 130 155 190 105 S300 78 370 95 485 128 615 62" fill="none" stroke-width="4"></path>
+          <path class="path-b" d="M25 88 C105 92 130 58 210 74 S330 126 405 82 520 48 615 76" fill="none" stroke-width="4"></path>
+          <path class="path-c" d="M25 180 C105 172 148 144 220 150 S345 188 410 130 525 112 615 116" fill="none" stroke-width="4"></path>
+          <g fill="currentColor" opacity=".68" font-size="12">
+            <text x="28" y="24">Sleep</text><text x="96" y="24">Calories</text><text x="184" y="24">Workout load</text>
+          </g>
+        </svg>`;
+    }
+    renderLineChart();
+
+    let timerSeconds = 25 * 60;
+    let timerInterval;
+    const timer = document.querySelector('#timer');
+    const timerButton = document.querySelector('#timerButton');
+    timerButton.addEventListener('click', () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerButton.textContent = 'Start timer';
+        return;
+      }
+      timerButton.textContent = 'Pause timer';
+      timerInterval = setInterval(() => {
+        timerSeconds = Math.max(0, timerSeconds - 1);
+        const minutes = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+        const seconds = String(timerSeconds % 60).padStart(2, '0');
+        timer.textContent = `${minutes}:${seconds}`;
+        if (timerSeconds === 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          timerButton.textContent = 'Restart timer';
+          timerSeconds = 25 * 60;
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
